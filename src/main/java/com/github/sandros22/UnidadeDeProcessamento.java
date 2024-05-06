@@ -1,10 +1,8 @@
 package com.github.sandros22;
 
-public class PU {
 
-    private Integer nivel;
-
-    public PU(Integer nivel) {
+public class UnidadeDeProcessamento {
+    public UnidadeDeProcessamento() {
     }
 
     public Integer getNivel() {
@@ -15,5 +13,7 @@ public class PU {
         this.nivel = nivel;
     }
 
-    public void processar(){}
+    public Runnable processar(){
+        return null;
+    }
 }

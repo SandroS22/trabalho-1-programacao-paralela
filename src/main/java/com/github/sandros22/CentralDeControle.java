@@ -1,13 +1,14 @@
 package com.github.sandros22;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
 
 public class CentralDeControle {
 
-    private int N_SENSORES;
-    private int N_ATUADORES;
-    public Map<Integer, Integer> atuadores = new HashMap<>();
+    private final int N_SENSORES;
+    private final int N_ATUADORES;
+    private Map<Integer, Integer> atuadores = new HashMap<>();
     Logger logger = Logger.getLogger(CentralDeControle.class.getName());
 
 
@@ -17,20 +18,35 @@ public class CentralDeControle {
     }
 
     public void iniciar() throws InterruptedException {
-        List<Thread> sensores = instanciaSensores();
+        instanciaSensores();
+        instanciaUps();
         instanciaAtuadores();
         for (Thread thread : sensores) {
             thread.start();
         }
         System.out.println("Main thread started");
-        for (Thread thread : sensores) {
+        for (Thread thread : unidadesDeProcessamento) {
             thread.join();
         }
     }
 
-    private List<Thread> instanciaSensores() {
+    private void instanciaUps() {
+        for (int i = 0; i < N_ATUADORES; i++) {
+            int finalI = i;
+            UnidadeDeProcessamento unidadeDeProcessamento = new UnidadeDeProcessamento();
+            Runnable runnable = unidadeDeProcessamento.processar();
+            Thread thread = new Thread(runnable);
+        }
+    }
+
+    private void instanciaSensores() {
         logger.info("Iniciando sensores");
-        return getThreads(N_SENSORES);
+        for (int i = 0; i < N_SENSORES; i++) {
+            int finalI = i;
+            Sensor sensor = new Sensor();
+            Runnable runnable = sensor.receberLeitura();
+            Thread thread = new Thread(runnable);
+        }
     }
 
     private void instanciaAtuadores() {
@@ -38,24 +54,6 @@ public class CentralDeControle {
         for (int i = 0; i < N_ATUADORES; i++) {
             atuadores.put(i, 0);
         }
-    }
-
-    private List<Thread> getThreads(int nAtuadores) {
-        List<Thread> threads = new ArrayList<>();
-        for (int i = 0; i < nAtuadores; i++) {
-            int finalI = i;
-            Runnable runnable = () -> System.out.printf("Thread: %d\n", finalI);
-            threads.add(new Thread(runnable));
-        }
-        return threads;
-    }
-
-    public void setN_SENSORES(int N_SENSORES) {
-        this.N_SENSORES = N_SENSORES;
-    }
-
-    public void setN_ATUADORES(int N_ATUADORES) {
-        this.N_ATUADORES = N_ATUADORES;
     }
 
     public int getN_SENSORES() {

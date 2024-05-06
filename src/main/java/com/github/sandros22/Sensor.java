@@ -8,8 +8,10 @@ public class Sensor {
 
     }
 
-    public Integer enviarLeitura(){
+    public Runnable receberLeitura() {
         // Valor superior é exclusivo
-        return new Random().nextInt(0,1001);
+        while (true) {
+            new Random().nextInt(0, 1001);
+        }
     }
 }
