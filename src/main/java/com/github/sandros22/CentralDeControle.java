@@ -29,8 +29,11 @@ public class CentralDeControle {
         iniciarThreads(unidadesDeProcessamento);
 
 
+        System.out.println("Main thread waiting for termination");
         finalizarThreads(sensores);
         finalizarThreads(unidadesDeProcessamento);
+
+
     }
 
     public void iniciarThreads(List<Thread> threads) {
@@ -47,7 +50,7 @@ public class CentralDeControle {
 
     private List<Thread> instanciaUps() {
         logger.info("Iniciando unidades de processamento");
-        return getThreads(50);
+        return getThreads(1);
     }
 
     private List<Thread> instanciaSensores() {
@@ -55,14 +58,7 @@ public class CentralDeControle {
         return getThreads(N_SENSORES);
     }
 
-//    public void iniciarSensores() {
-//        logger.info("Iniciando sensores");
-//        for (int i = 0; i < sensores.size(); i++) {
-//            sensores.get(i).run();
-//        }
-//    }
-
-    private List<Thread> getThreads(Integer tamanho)  {
+    private List<Thread> getThreads(Integer tamanho) {
         List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < tamanho; i++) {
             Runnable sensor = new Sensor(N_SENSORES);
