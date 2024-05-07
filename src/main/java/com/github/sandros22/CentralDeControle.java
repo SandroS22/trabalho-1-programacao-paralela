@@ -1,6 +1,5 @@
 package com.github.sandros22;
 
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -8,7 +7,11 @@ public class CentralDeControle {
 
     private final int N_SENSORES;
     private final int N_ATUADORES;
-    private Map<Integer, Integer> atuadores = new HashMap<>();
+    public static Map<Integer, Integer> atuadores = new HashMap<>();
+
+    private List<Thread> sensores;
+    private List<Thread> unidadesDeProcessamento;
+
     Logger logger = Logger.getLogger(CentralDeControle.class.getName());
 
 
@@ -18,35 +21,55 @@ public class CentralDeControle {
     }
 
     public void iniciar() throws InterruptedException {
-        instanciaSensores();
-        instanciaUps();
+        sensores = instanciaSensores();
+        unidadesDeProcessamento = instanciaUps();
         instanciaAtuadores();
-        for (Thread thread : sensores) {
+        iniciarThreads(sensores);
+        System.out.println("Main thread started");
+        iniciarThreads(unidadesDeProcessamento);
+
+
+        finalizarThreads(sensores);
+        finalizarThreads(unidadesDeProcessamento);
+    }
+
+    public void iniciarThreads(List<Thread> threads) {
+        for (Thread thread : threads) {
             thread.start();
         }
-        System.out.println("Main thread started");
-        for (Thread thread : unidadesDeProcessamento) {
+    }
+
+    public void finalizarThreads(List<Thread> threads) throws InterruptedException {
+        for (Thread thread : threads) {
             thread.join();
         }
     }
 
-    private void instanciaUps() {
-        for (int i = 0; i < N_ATUADORES; i++) {
-            int finalI = i;
-            UnidadeDeProcessamento unidadeDeProcessamento = new UnidadeDeProcessamento();
-            Runnable runnable = unidadeDeProcessamento.processar();
-            Thread thread = new Thread(runnable);
-        }
+    private List<Thread> instanciaUps() {
+        logger.info("Iniciando unidades de processamento");
+        return getThreads(50);
     }
 
-    private void instanciaSensores() {
-        logger.info("Iniciando sensores");
-        for (int i = 0; i < N_SENSORES; i++) {
-            int finalI = i;
-            Sensor sensor = new Sensor();
-            Runnable runnable = sensor.receberLeitura();
-            Thread thread = new Thread(runnable);
+    private List<Thread> instanciaSensores() {
+        logger.info("Instanciando sensores");
+        return getThreads(N_SENSORES);
+    }
+
+//    public void iniciarSensores() {
+//        logger.info("Iniciando sensores");
+//        for (int i = 0; i < sensores.size(); i++) {
+//            sensores.get(i).run();
+//        }
+//    }
+
+    private List<Thread> getThreads(Integer tamanho)  {
+        List<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < tamanho; i++) {
+            Runnable sensor = new Sensor(N_SENSORES);
+            Thread thread = new Thread(sensor);
+            threads.add(thread);
         }
+        return threads;
     }
 
     private void instanciaAtuadores() {
@@ -54,13 +77,5 @@ public class CentralDeControle {
         for (int i = 0; i < N_ATUADORES; i++) {
             atuadores.put(i, 0);
         }
-    }
-
-    public int getN_SENSORES() {
-        return N_SENSORES;
-    }
-
-    public int getN_ATUADORES() {
-        return N_ATUADORES;
     }
 }
