@@ -8,6 +8,7 @@ public class CentralDeControle {
     private final int N_SENSORES;
     private final int N_ATUADORES;
     public static Map<Integer, Integer> atuadores = new HashMap<>();
+    public static List<Map<Integer, Integer>> dados = new ArrayList<>();
 
     private List<Thread> sensores;
     private List<Thread> unidadesDeProcessamento;
@@ -25,13 +26,13 @@ public class CentralDeControle {
         unidadesDeProcessamento = instanciaUps();
         instanciaAtuadores();
         iniciarThreads(sensores);
-        System.out.println("Main thread started");
         iniciarThreads(unidadesDeProcessamento);
 
 
-        System.out.println("Main thread waiting for termination");
         finalizarThreads(sensores);
         finalizarThreads(unidadesDeProcessamento);
+        System.out.println(dados);
+        System.out.println(atuadores);
 
 
     }
@@ -49,27 +50,40 @@ public class CentralDeControle {
     }
 
     private List<Thread> instanciaUps() {
-        logger.info("Iniciando unidades de processamento");
-        return getThreads(1);
+        logger.info("Instanciando unidades de processamento");
+        return getUnidadesDeProcessamento();
     }
 
     private List<Thread> instanciaSensores() {
         logger.info("Instanciando sensores");
-        return getThreads(N_SENSORES);
+        return getSensores(N_SENSORES);
     }
 
-    private List<Thread> getThreads(Integer tamanho) {
+    private List<Thread> getSensores(Integer tamanho) {
         List<Thread> threads = new ArrayList<>();
         for (int i = 0; i < tamanho; i++) {
-            Runnable sensor = new Sensor(N_SENSORES);
+            Runnable sensor = new Sensor(tamanho);
             Thread thread = new Thread(sensor);
             threads.add(thread);
         }
         return threads;
     }
 
+
+    private List<Thread> getUnidadesDeProcessamento() {
+        List<Thread> threads = new ArrayList<>();
+        int quantUps = 50;
+        for (int i = 0; i < quantUps; i++) {
+            Runnable unidadeDeProcessamento = new UnidadeDeProcessamento();
+            Thread thread = new Thread(unidadeDeProcessamento);
+            threads.add(thread);
+        }
+        return threads;
+    }
+
+
     private void instanciaAtuadores() {
-        logger.info("Iniciando atuadores");
+        logger.info("Instanciando atuadores");
         for (int i = 0; i < N_ATUADORES; i++) {
             atuadores.put(i, 0);
         }
