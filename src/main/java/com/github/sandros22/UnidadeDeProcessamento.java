@@ -1,5 +1,7 @@
 package com.github.sandros22;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -9,20 +11,25 @@ public class UnidadeDeProcessamento implements Runnable{
 
     public synchronized void processar(Map<Integer, Integer> dado) throws InterruptedException {
         CentralDeControle.atuadores.put(dado.entrySet().iterator().next().getKey(), dado.entrySet().iterator().next().getValue());
-        CentralDeControle.dados.remove(0);
+        List<Map<Integer, Integer>> aux = new ArrayList<>();
+        aux.add(CentralDeControle.dados.get(0));
+        CentralDeControle.dados.removeAll(aux);
         Thread.sleep(0);
-        System.out.println(CentralDeControle.dados);
     }
 
     @Override
     public void run() {
+        ReentrantLock lock = new ReentrantLock();
         int contador = 0;
         while (contador < 5){
-            ReentrantLock lock = new ReentrantLock();
             if(CentralDeControle.dados.size() > 1) {
+                lock.lock();
                 Map<Integer, Integer> dado = CentralDeControle.dados.get(0);
                 try {
-                    processar(dado);
+                    if(dado != null) {
+                        processar(dado);
+                        lock.unlock();
+                    }
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

@@ -7,17 +7,18 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Sensor implements  Runnable{
 
-    private final Integer numSensores;
+    private final Integer numAtuadores;
 
-    public Sensor(Integer numSensores) {
-        this.numSensores = numSensores;
+    public Sensor(Integer numAtuadores) {
+        this.numAtuadores = numAtuadores;
     }
 
     @Override
     public void run() {
+        ReentrantLock lock = new ReentrantLock();
+        lock.lock();
         int contador = 0;
         while (contador < 5) {
-            ReentrantLock lock = new ReentrantLock();
             // Valor superior exclusivo
             Integer timeOut = new Random().nextInt(1, 6) * 1000;
             try {
@@ -25,9 +26,8 @@ public class Sensor implements  Runnable{
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            lock.lock();
             Integer dadoSensorial = new Random().nextInt(1, 1000);
-            Integer index = dadoSensorial % numSensores;
+            Integer index = dadoSensorial % numAtuadores;
 
             Integer nivelAtividade = new Random().nextInt(1, 100);
             alocarDado(index, nivelAtividade);

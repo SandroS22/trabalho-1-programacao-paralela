@@ -22,18 +22,24 @@ public class CentralDeControle {
     }
 
     public void iniciar() throws InterruptedException {
-        sensores = instanciaSensores();
-        unidadesDeProcessamento = instanciaUps();
-        instanciaAtuadores();
-        iniciarThreads(sensores);
-        iniciarThreads(unidadesDeProcessamento);
+        try {
 
 
-        finalizarThreads(sensores);
-        finalizarThreads(unidadesDeProcessamento);
-        System.out.println(dados);
-        System.out.println(atuadores);
+            sensores = instanciaSensores();
+            unidadesDeProcessamento = instanciaUps();
+            instanciaAtuadores();
+            iniciarThreads(sensores);
+            iniciarThreads(unidadesDeProcessamento);
 
+            finalizarThreads(sensores);
+            finalizarThreads(unidadesDeProcessamento);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        } finally {
+            System.out.println(dados);
+            System.out.println(atuadores);
+        }
 
     }
 
