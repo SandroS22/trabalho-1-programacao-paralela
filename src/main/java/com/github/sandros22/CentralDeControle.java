@@ -21,7 +21,7 @@ public class CentralDeControle {
         this.N_ATUADORES = num_atuadores;
     }
 
-    public void iniciar() throws InterruptedException {
+    public void iniciar() {
         try {
 
 
@@ -29,6 +29,7 @@ public class CentralDeControle {
             unidadesDeProcessamento = instanciaUps();
             instanciaAtuadores();
             iniciarThreads(sensores);
+            Thread.sleep(1000);
             iniciarThreads(unidadesDeProcessamento);
 
             finalizarThreads(sensores);
@@ -93,5 +94,10 @@ public class CentralDeControle {
         for (int i = 0; i < N_ATUADORES; i++) {
             atuadores.put(i, 0);
         }
+    }
+
+    public static synchronized void mostraMsgNoPainel(String msg, long timeOut) throws InterruptedException {
+        System.out.printf(msg);
+        Thread.sleep(timeOut);
     }
 }
