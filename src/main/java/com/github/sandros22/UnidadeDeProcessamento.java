@@ -1,15 +1,15 @@
 package com.github.sandros22;
 
-import java.sql.Time;
-import java.util.*;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 
 public class UnidadeDeProcessamento implements Runnable {
 
-    private final Logger logger = Logger.getLogger("UnidadeDeProcessamento");
-
     private static final ReentrantLock lock = new ReentrantLock();
+    private static final ReentrantLock lockTime = new ReentrantLock();
+    private static boolean erroMudarNivel = false;
+    private static boolean erroMsgNoTerminal = false;
 
     public UnidadeDeProcessamento() {
     }
@@ -17,22 +17,58 @@ public class UnidadeDeProcessamento implements Runnable {
     public void processar(Map<Integer, Integer> dado) throws InterruptedException {
         CentralDeControle.atuadores.put(dado.entrySet().iterator().next().getKey(), dado.entrySet().iterator().next().getValue());
         CentralDeControle.dados.remove(dado);
-        Integer time = new Random().nextInt(2, 4) * 1000;
-        long timer1 = new Date().getTime();
-        CentralDeControle.mostraMsgNoPainel(String.format("Alterando: %d com valor %d\n", dado.entrySet().iterator().next().getKey(), dado.values().iterator().next()), 1000);
 
-        Thread.sleep(time);
-        long timer2 = new Date().getTime();
-        System.out.println((timer2 - timer1) / 1000);
-        lock.unlock();
+        Thread t1 = new Thread(mudarNivel());
+        Thread t2 = new Thread(mostraMsgNoPainel());
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        if(!erroMudarNivel && !erroMsgNoTerminal) {
+            CentralDeControle.mostraMsgNoPainel(String.format("Alterando: %d com valor %d\n", dado.entrySet().iterator().next().getKey(), dado.values().iterator().next()), 1000);
+            lock.unlock();
+            lockTime.lock();
+            int time = new Random().nextInt(2, 4) * 1000;
+            Thread.sleep(time);
+            lockTime.unlock();
+        } else {
+            erroMudarNivel = false;
+            erroMsgNoTerminal = false;
+            CentralDeControle.mostraMsgNoPainel(String.format("Falha: %d\n", dado.entrySet().iterator().next().getKey()), 0);
+        }
+    }
+
+    public Runnable mudarNivel() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                int chanceErro = new Random().nextInt(0, 101);
+                if (chanceErro <= 20) {
+                    erroMudarNivel = true;
+                }
+            }
+        };
+    }
+
+    public Runnable mostraMsgNoPainel() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                int chanceErro = new Random().nextInt(0, 101);
+                if (chanceErro <= 20) {
+                    erroMsgNoTerminal = true;
+                }
+            }
+        };
     }
 
     @Override
     public void run() {
-        while (!CentralDeControle.dados.isEmpty()) {
+        while (true) {
             lock.lock();
-            Map<Integer, Integer> dado = CentralDeControle.dados.get(0);
             try {
+
+                Map<Integer, Integer> dado = CentralDeControle.dados.get(0);
                 if (dado != null) {
                     processar(dado);
                 } else {
@@ -40,6 +76,7 @@ public class UnidadeDeProcessamento implements Runnable {
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (IndexOutOfBoundsException ignore) {
             }
         }
     }

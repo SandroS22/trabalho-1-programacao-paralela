@@ -1,6 +1,9 @@
 package com.github.sandros22;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class CentralDeControle {
@@ -10,12 +13,7 @@ public class CentralDeControle {
     public static Map<Integer, Integer> atuadores = new HashMap<>();
     public static List<Map<Integer, Integer>> dados = new ArrayList<>();
 
-    private List<Thread> sensores;
-    private List<Thread> unidadesDeProcessamento;
-
     Logger logger = Logger.getLogger(CentralDeControle.class.getName());
-
-
     public CentralDeControle(int num_sensores, int num_atuadores) {
         this.N_SENSORES = num_sensores;
         this.N_ATUADORES = num_atuadores;
@@ -25,11 +23,10 @@ public class CentralDeControle {
         try {
 
 
-            sensores = instanciaSensores();
-            unidadesDeProcessamento = instanciaUps();
+            List<Thread> sensores = instanciaSensores();
+            List<Thread> unidadesDeProcessamento = instanciaUps();
             instanciaAtuadores();
             iniciarThreads(sensores);
-            Thread.sleep(1000);
             iniciarThreads(unidadesDeProcessamento);
 
             finalizarThreads(sensores);

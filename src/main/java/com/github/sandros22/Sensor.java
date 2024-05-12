@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 
 public class Sensor implements  Runnable{
 
     private final Integer numAtuadores;
+
+    private static final ReentrantLock lock = new ReentrantLock();
+    private static final ReentrantLock lockTime = new ReentrantLock();
 
     public Sensor(Integer numAtuadores) {
         this.numAtuadores = numAtuadores;
@@ -16,23 +18,23 @@ public class Sensor implements  Runnable{
 
     @Override
     public void run() {
-        int contador = 0;
-        while (contador < 5) {
+        while (true) {
+            lockTime.lock();
             // Valor superior exclusivo
-            Integer timeOut = new Random().nextInt(1, 6) * 1000;
+            int timeOut = new Random().nextInt(1, 6) * 1000;
             try {
                 Thread.sleep(timeOut);
+                lockTime.unlock();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            ReentrantLock lock = new ReentrantLock();
+
             lock.lock();
             Integer dadoSensorial = new Random().nextInt(1, 1000);
             Integer index = dadoSensorial % numAtuadores;
 
             Integer nivelAtividade = new Random().nextInt(1, 100);
             alocarDado(index, nivelAtividade);
-            contador++;
             lock.unlock();
         }
     }
