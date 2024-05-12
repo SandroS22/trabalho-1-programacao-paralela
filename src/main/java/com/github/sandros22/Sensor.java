@@ -14,12 +14,9 @@ public class Sensor implements  Runnable{
         this.numAtuadores = numAtuadores;
     }
 
-    private final Logger logger = Logger.getLogger(Sensor.class.getName());
-
     @Override
     public void run() {
         int contador = 0;
-        logger.info("Sensor rodando");
         while (contador < 5) {
             // Valor superior exclusivo
             Integer timeOut = new Random().nextInt(1, 6) * 1000;
